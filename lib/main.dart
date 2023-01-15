@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:idle/brokers.dart';
+import 'package:idle/functions.dart';
 import 'package:idle/number.dart';
 import 'package:idle/pulse.dart';
-import 'package:idle/upgrade.dart';
+import 'package:idle/units.dart';
 
 void main() {
   runApp(const MyApp());
@@ -52,12 +54,19 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class DimensionHolder {
+  final LinearAccumulator dimension;
+  final LevelBuyer levelBuyer;
+
+  DimensionHolder(this.dimension, this.levelBuyer);
+}
+
 class _HomePageState extends State<HomePage> {
   bool _isRunning = true;
 
   DateTime _lastTime = DateTime.now();
   final Pulse pulse = Pulse(null);
-  final List<Upgrade> dimensions = [];
+  final List<LevelBuyer> buyers = [];
 
   void _incrementCounter() {
     setState(() {
@@ -67,30 +76,63 @@ class _HomePageState extends State<HomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       var currentTime = DateTime.now();
-      var delta = 0.001 * (currentTime.millisecondsSinceEpoch - _lastTime.millisecondsSinceEpoch);
+      var delta = 0.001 *
+          (currentTime.millisecondsSinceEpoch -
+              _lastTime.millisecondsSinceEpoch);
       _lastTime = currentTime;
       var timeUnit = pulse.next(delta);
-      dimensions[0].tick(timeUnit);
+      for (var element in buyers) {
+        element.target.tick(timeUnit);
+      }
       _lastTime = currentTime;
     });
   }
 
   void _buy() {
-    for (var element in dimensions) {
-      element.buyUpgrade(dimensions[0]);
+    for (int i = buyers.length; i > 0;) {
+      var element = buyers[--i];
+      var bought = element.buyUpgrade();
     }
+  }
+
+  @override
+  void dispose() {
+    _isRunning = false;
+    super.dispose();
   }
 
   @override
   void initState() {
     _lastTime = DateTime.now();
-    var firstDimension = Upgrade(Number.ten, Number.ten, Number.ten, false);
-    firstDimension.setAmount(Number.from(10));
-    dimensions.add(firstDimension);
-    var secondDimension = Upgrade(Number.ten, Number.from(100), Number.from(100), false);
-    dimensions.add(secondDimension);
-    firstDimension.externalSources.addSource(secondDimension);
-    Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
+
+    // 1 2 3 5 8 13 21 34
+    var dimCostExp = [1, 2, 3, 5, 8, 13, 21, 34];
+    var dimCostMulExp = [3, 4, 5, 7, 10, 15, 23, 36];
+    for (int i = 0; i < 8; i++) {
+      var source = TickerUnit();
+      var dimension = LinearAccumulator(source,
+          defaultMultiplier: TickerUnit.from(Number.one));
+      var buyer = LevelBuyer(
+          i == 0 ? dimension : buyers[0].target,
+          dimension,
+          10,
+          Number.number(1, dimCostExp[i]),
+          Number.number(1, dimCostMulExp[i]));
+      buyers.add(buyer);
+      if (i > 0) {
+        buyers[i - 1].target.externalSources.addSource(dimension);
+      }
+    }
+    for (int i = 1; i < 8; i++) {
+      var gate =
+          Gate(buyers[i], TickerUnit.from(Number.from(0.1)), Number.zero, 1);
+      for (int j = 0; j < i; j++) {
+        var multipliers = buyers[j].target.multipliers;
+        multipliers.addSource(gate);
+      }
+    }
+    buyers[0].target.setValue(Number.ten);
+    Timer.periodic(const Duration(milliseconds: 50), (Timer timer) {
       if (!_isRunning) {
         // cancel the timer
         timer.cancel();
@@ -100,22 +142,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  String _format(double value) {
-    if (value.isFinite) {
-      if (value < 10000) {
-        return value.toStringAsFixed(0);
-      }
-      return value.toStringAsExponential(4);
-    }
-    return '';
-  }
-
-  String _formatDimension(Upgrade value) {
-    return "${value.id} ${value.getCurrentAmount().toString()} (${value.cost.toString()}) ${value.level} ${value.subLevel} ${value.source.getCurrentAmount().toString()}";
-  }
-
-  String _formatList(List<double> values) {
-    return values.map((e) => _format(e)).join(", ");
+  String _formatDimension(LevelBuyer holder) {
+    return "${holder.target.id} x${holder.target.multipliers.value.toString()} ${holder.target.source.value.toString()} (${holder.cost.toString()})";
   }
 
   @override
@@ -129,12 +157,80 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              _formatDimension(dimensions[0]),
-              style: Theme.of(context).textTheme.headline4,
+              buyers[0].target.value.toString(),
+              style: Theme.of(context).textTheme.headline3,
             ),
-            Text(
-              _formatDimension(dimensions[1]),
-              style: Theme.of(context).textTheme.headline4,
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[0]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[0].buyUpgrade),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[1]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[1].buyUpgrade),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[2]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[2].buyUpgrade),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[3]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[3].buyUpgrade),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[4]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[4].buyUpgrade),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[5]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[5].buyUpgrade),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[6]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[6].buyUpgrade),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDimension(buyers[7]),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                MaterialButton(onPressed: buyers[7].buyUpgrade),
+              ],
             ),
           ],
         ),

@@ -4,7 +4,7 @@ import 'package:idle/number.dart';
 @immutable
 class TimeUnit implements Comparable<TimeUnit> {
   final double timestamp;
-  final Number deltaEpoch;
+  final double deltaEpoch;
   final Number scaledTime;
 
   const TimeUnit(
@@ -12,10 +12,10 @@ class TimeUnit implements Comparable<TimeUnit> {
       required this.deltaEpoch,
       required this.scaledTime});
 
-  static const TimeUnit zero =
-      TimeUnit(timestamp: 0, deltaEpoch: Number.zero, scaledTime: Number.zero);
+  static const TimeUnit epoch =
+      TimeUnit(timestamp: 0, deltaEpoch: 0.0, scaledTime: Number.zero);
   static const TimeUnit nonExistent =
-      TimeUnit(timestamp: -1, deltaEpoch: Number.zero, scaledTime: Number.zero);
+      TimeUnit(timestamp: -1, deltaEpoch: 0.0, scaledTime: Number.zero);
 
   bool isZero() {
     return scaledTime.isZero();

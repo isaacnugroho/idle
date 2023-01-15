@@ -1,14 +1,15 @@
-import 'package:idle/abstract_unit.dart';
-import 'package:idle/constant.dart';
+import 'package:idle/units.dart';
 import 'package:idle/time_unit.dart';
 
 import 'number.dart';
 
 class Pulse {
   double _timestamp = 0;
-  AbstractUnit _timeScaleUnit;
+  final TickerUnit _timeScaleUnit;
 
-  Pulse(AbstractUnit? timeScaleUnit) : _timeScaleUnit = timeScaleUnit ?? Constant(Number.one);
+  Pulse(TickerUnit? timeScaleUnit) : _timeScaleUnit = timeScaleUnit ?? TickerUnit.from(Number.one) {
+    _timeScaleUnit.init();
+  }
 
   TimeUnit next(num delta) {
     assert(delta > 0.0);
@@ -16,15 +17,12 @@ class Pulse {
     var numDelta = Number.from(delta);
     var timeUnit = TimeUnit(
       timestamp: _timestamp,
-      deltaEpoch: numDelta,
-      scaledTime: numDelta * _timeScaleUnit.getCurrentAmount(),
+      deltaEpoch: delta.toDouble(),
+      scaledTime: numDelta * _timeScaleUnit.value,
     );
     _timeScaleUnit.tick(timeUnit);
     return timeUnit;
   }
 
-  void setTimeScaleUnit(AbstractUnit unit) {
-    unit.transfer(_timeScaleUnit);
-    _timeScaleUnit = unit;
-  }
+  TickerUnit get timeScaleUnit => _timeScaleUnit;
 }

@@ -1,11 +1,13 @@
-import 'package:idle/abstract_unit.dart';
+import 'package:idle/units.dart';
 import 'package:idle/number.dart';
 import 'package:idle/time_unit.dart';
 
-abstract class Aggregator extends AbstractUnit {
-  final List<AbstractUnit> _sources;
+abstract class Aggregator extends TickerUnit {
+  final List<TickerUnit> _sources;
 
-  Aggregator(List<AbstractUnit>? sources) : _sources = (sources ?? []);
+  Aggregator(List<TickerUnit>? sources)
+      : _sources = (sources ?? []),
+        super(false);
 
   AggregateData initIterator();
 
@@ -24,7 +26,7 @@ abstract class Aggregator extends AbstractUnit {
       }
       data.counter++;
     }
-    return finalize(data);
+    return setValue(finalize(data));
   }
 
   @override
@@ -36,14 +38,14 @@ abstract class Aggregator extends AbstractUnit {
       }
       data.counter++;
     }
-    return finalize(data);
+    return produce(finalize(data));
   }
 
-  void addSource(AbstractUnit unit) {
+  void addSource(TickerUnit unit) {
     _sources.add(unit);
   }
 
-  bool removeSource(AbstractUnit unit) {
+  bool removeSource(TickerUnit unit) {
     return _sources.remove(unit);
   }
 }

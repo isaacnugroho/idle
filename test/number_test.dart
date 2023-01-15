@@ -5,7 +5,7 @@ import 'package:idle/number.dart';
 void main() {
   test('test number 1', () {
     var aValue = Number.from(1000);
-    expect(aValue.toString(), "1000.0");
+    expect(aValue.toString(), "1.00e3");
   });
 
   test('test number 2', () {
@@ -46,7 +46,7 @@ void main() {
   test('test number addition 2', () {
     var value1 = Number.from(90);
     var value2 = Number.from(120000000.0);
-    expect(value1.add(value2).toString(), "1.200e8");
+    expect(value1.add(value2).toString(), "1.20e8");
   });
 
   test('test number addition 3', () {
@@ -58,7 +58,7 @@ void main() {
   test('test number addition 4', () {
     var value1 = Number.from(120000000.0);
     var value2 = Number.from(90);
-    expect(value1.add(value2).toString(), "1.200e8");
+    expect(value1.add(value2).toString(), "1.20e8");
   });
 
   test('test number subtraction 1', () {
@@ -70,7 +70,7 @@ void main() {
   test('test number subtraction 2', () {
     var value1 = Number.from(90);
     var value2 = Number.from(120000000.0);
-    expect(value1.sub(value2).toString(), "-1.200e8");
+    expect(value1.sub(value2).toString(), "-1.20e8");
   });
 
   test('test number subtraction 3', () {
@@ -82,7 +82,7 @@ void main() {
   test('test number subtraction 4', () {
     var value1 = Number.from(120000000.0);
     var value2 = Number.from(90);
-    expect(value1.sub(value2).toString(), "1.200e8");
+    expect(value1.sub(value2).toString(), "1.20e8");
   });
 
   test('test comparison 1', () {
@@ -106,7 +106,7 @@ void main() {
   test('test power 2', () {
     var value1 = Number.from(20000.0);
     var value2 = Number.from(3.0);
-    expect(value1.power(value2).toString(), "8.000e12");
+    expect(value1.power(value2).toString(), "8.00e12");
   });
 
   test('test power 3', () {
@@ -118,7 +118,7 @@ void main() {
   test('test power 4', () {
     var value1 = Number.from(400.0);
     var value2 = Number.from(-0.5);
-    expect(value1.power(value2).toString(), "5.000e-2");
+    expect(value1.power(value2).toString(), "5.00e-2");
   });
 
   test('test power 5', () {
@@ -143,7 +143,7 @@ void main() {
   test('test power 8', () {
     var value1 = Number.from(100.0);
     var value2 = Number.from(10000);
-    expect(value1.power(value2).toString(), "1.000e20000");
+    expect(value1.power(value2).toString(), "1.00e20000");
   });
 
   test('test log10 1', () {

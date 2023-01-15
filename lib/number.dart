@@ -13,6 +13,10 @@ class Number implements Comparable<Number> {
     return normalize(numValue.toDouble(), 0.0);
   }
 
+  factory Number.number(num m, num e) {
+    return normalize(m.toDouble(), e.toDouble());
+  }
+
   static const Number zero = Number._(mantissa: 0.0, exponent: 0);
   static const Number one = Number._(mantissa: 1.0, exponent: 0);
   static const Number two = Number._(mantissa: 2.0, exponent: 0);
@@ -36,11 +40,11 @@ class Number implements Comparable<Number> {
 
   @override
   String toString() {
-    if (exponent >= 0 && exponent <= 3) {
-      var value = ((mantissa * pow(10, exponent)) * 10.0).roundToDouble() * 0.1;
-      return value.toStringAsFixed(1);
+    if (exponent > -2 && exponent < 6) {
+      var value = (mantissa * pow(10, exponent + 2)).roundToDouble() * 0.01;
+      return value.toStringAsFixed(2);
     }
-    return "${mantissa.toStringAsFixed(3)}e${exponent.toInt()}";
+    return "${mantissa.toStringAsFixed(2)}e${exponent.toInt()}";
   }
 
   // String toStringAsFixed(int decimals) {
